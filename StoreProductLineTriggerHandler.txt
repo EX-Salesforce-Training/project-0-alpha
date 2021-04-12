@@ -1,0 +1,69 @@
+public class StoreProductLineTriggerHandler {
+    public static void updateProducts(List<Product_Line__c> newProducts) {
+        updateInventory(newProducts);
+        updateTotalCost(newProducts);
+        
+    }
+    public static void updateInventory(List<Product_Line__c> newProducts){   
+        Store_Inventory__c inventory = findInventory(newProducts);    
+        For(Product_Line__c pl: newProducts){
+            //subtract From Inventory
+            inventory.Number_in_Stock__c = inventory.Number_in_Stock__c - pl.Quantity__c;
+            //Ask if we are out of stock
+            if (inventory.Number_in_Stock__c < 0){
+                pl.Quantity__c.addError('Not enough in Stock');
+            }
+        }
+        update inventory;
+        
+    }
+    public static void updateTotalCost(List<Product_Line__c> newProductLines)
+    {
+        List<Store_Product__c> Products = [SELECT Price_Per_Unit__c FROM Store_Product__c];
+        for (Product_Line__c pl: newProductLines){
+            for(Store_Product__c p: products){
+                if(pl.Product__c == p.id){
+                    pl.Total_Cost__c = p.Price_Per_Unit__c * pl.Quantity__c;
+                }
+                
+            }
+        }
+    }
+    public static void editProducts(List<Product_Line__c> newProducts, List<Product_Line__c> oldProducts){
+        Store_Inventory__c oldInv = findInventory(oldProducts);
+        Store_Inventory__c newInv = findInventory(newProducts);
+        //get the difference in inventory from old to new
+        newInv.Number_in_Stock__c = newInv.Number_in_Stock__c - (newProducts[0].Quantity__c - oldProducts[0].Quantity__c);
+        //Ask if we are out of stock
+        if (newInv.Number_in_Stock__c < 0){
+            newProducts[0].Quantity__c.addError('Not enough in Stock');
+        }
+        update newInv;
+        updateTotalCost(newProducts);
+        
+        
+    }
+    
+    public static void deleteLineItem(List<Product_Line__c> newProducts){
+        Store_Inventory__c inventory = findInventory(newProducts);
+        For(Product_Line__c pl: newProducts){
+            //add the quantity back to the inventory
+            inventory.Number_in_Stock__c = inventory.Number_in_Stock__c + pl.Quantity__c;   
+        }
+        update inventory;
+    }
+    static Store_Inventory__c findInventory(List<Product_Line__c> products)
+    {
+        Store_Inventory__c toReturn;
+        for (Product_Line__c pl: products){
+            //Grab the transaction that matches our Product Line item's transaction
+            Transaction__c trans = [SELECT Store_Location__c FROM Transaction__c WHERE id = :pl.Transaction__c ];
+            //Grab the inventory from the store associated with the transaction we just got and our product line's product
+            Store_Inventory__c inventory = [SELECT Store_Product__c, Number_in_Stock__c FROM Store_Inventory__c WHERE Store_Location__c = :trans.Store_Location__c AND Store_Product__c = :pl.Product__c];
+            toReturn = inventory;
+        }
+        return toReturn;
+    }
+    
+
+}

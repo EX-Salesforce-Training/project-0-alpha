@@ -1,0 +1,29 @@
+@istest
+private class StoreProductLineTest {
+	@isTest static void singleTest(){
+        Store_Location__c loc = new Store_Location__c(name = 'NY');
+        insert loc;
+        Store_Product__c prod = new Store_Product__c(name = 'Hat', Price_Per_Unit__c = 3);
+        insert prod;
+        Salesperson__c chad = new Salesperson__c(Store_Location__c = loc.id);
+        insert chad;
+        Store_Inventory__c inv = new Store_Inventory__c(Store_Location__c = loc.id, Store_Product__c = prod.id, Number_in_Stock__c = 100);
+        insert inv;
+        Transaction__c trans = new Transaction__c(Store_Location__c = loc.id, Salesperson__c = chad.id);
+        insert trans;
+        Product_Line__c line = new Product_Line__c(Transaction__c = trans.id, Product__c = prod.id, Quantity__c = 10);
+       	insert line;
+       	line.Quantity__c = 101;
+        
+        Integer numFailed = 0;
+        Database.SaveResult sr = Database.update(line, false);
+        if(!sr.isSuccess()){
+            numFailed = 1;
+        }
+        System.assertEquals(1, numFailed);
+        delete line;
+    }
+    
+    
+    
+}

@@ -1,0 +1,16 @@
+public class RentalLineTriggerHandler {
+    
+	public static void updateTotalCost(List<Rental_Line__c> newRentals)
+    {
+        List<Rental__c> rentals = [SELECT Price_Per_Unit__c FROM Rental__c];
+        for (Rental_Line__c pl: newRentals){
+            for(Rental__c p: rentals){
+                if(pl.Rental__c == p.id){
+                    pl.Total_Cost__c = p.Price_Per_Unit__c * pl.Quantity__c;
+                }
+     			
+            }
+         }
+    }
+
+}
