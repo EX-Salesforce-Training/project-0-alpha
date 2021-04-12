@@ -1,0 +1,35 @@
+//////////////////////////////////////////
+//Name: ShipmentTest
+//Author: Abdul-Shahid Wali
+//Date Created: 04/10/21
+//Date Updated: 04/12/21
+//Description: Test class for the Shipment trigger
+//
+//////////////////////////////////////////
+
+@isTest
+private class ShipmentTest {
+    
+    @isTest static void singleTest(){
+        Delivery_Truck__c newTruck = new Delivery_Truck__c(Mileage__c = 30000);
+        Location__c newLocation = new Location__c(Name = 'Target', Inventory__c = 3000);
+        insert newTruck;
+        insert newLocation;
+        Shipment__c newShipment = new Shipment__c(Status__c = 'Not Shipped') ;
+    	newShipment.Location__c = newLocation.Id;
+        newShipment.Delivery_Truck__c = newTruck.Id;
+       
+        insert newShipment;
+        List<Location__c> testLocation = [SELECT Inventory__c from Location__c WHERE ID = :newLocation.Id];
+        //If the inventory has been reduced by 1, the test succeeds
+        System.assertEquals(2999, testLocation[0].Inventory__c);
+        
+        
+        newShipment.Status__c = 'Delivered';
+        update newShipment;
+        list<Delivery_Truck__c> testTruck = [SELECT Mileage__c from Delivery_Truck__c WHERE Id = :newTruck.Id];
+        //If the mileage has been increased by 30, the test succeeds
+        System.assertEquals(30030, testTruck[0].Mileage__c);
+    }
+
+}
