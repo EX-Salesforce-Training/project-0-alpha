@@ -9,24 +9,7 @@
 
 public class CustomerTriggerHandler {
    
-    public static void HandleBeforeInsert(List<Account> currAccounts) {
-        
-        for ( Account i : currAccounts) {
-            i.description = 'Book Store Corp. LLC';
-        }
-    }
-    public static void HandleAfterInsert(List<Account> currAccounts) {
-        List<Task> customerTask = new List<Task>();
-        for ( Account i : currAccounts) {
-           Task currTask = new Task();
-           currTask.ownerId = i.OwnerId;
-           currTask.Subject = ' New Customer, yay!';
-           currTask.Priority = 'Normal';
-           currTask.whatId = i.id;
-           customerTask.add(currTask);
-        }
-        Insert customerTask;
-    }
+   
     //Bussiness requirement: Taking two specific value fields from Account on update 
     //                       and update opportunity and contact records associated. 
     public static void HandleAfterUpdate(map<id, Account> oldRecords, map<id, Account> currRecords) {
@@ -46,7 +29,8 @@ public class CustomerTriggerHandler {
                 matchContacts.put(currAcc.Contact__c, currAcc);
             }
         }
-        
+        //store org Opportunities in collection
+        //contacts are checked against existing customer accounts
         list <Opportunity> orgOpportunities = [SELECT Emergency_Contact_0__c, Emergency_Contact_1__c, Name, Id
                                            FROM Opportunity WHERE Id IN :availableOpportunities];
         list <Contact> orgContacts = [SELECT Emergency_Contact_0__c, Emergency_Contact_1__c, Name, Id

@@ -7,10 +7,8 @@ trigger CustomerTrigger on Account (before insert, after insert, after update) {
 
     switch on trigger.operationType{
         when BEFORE_INSERT {
-            CustomerTriggerHandler.HandleBeforeInsert(Trigger.new);
         }
         when AFTER_INSERT { 
-            CustomerTriggerHandler.HandleAfterInsert(Trigger.new);
         }
         when AFTER_UPDATE {
             CustomerTriggerHandler.HandleAfterUpdate(Trigger.oldMap, Trigger.newMap);
