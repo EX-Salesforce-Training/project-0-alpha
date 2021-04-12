@@ -9,7 +9,6 @@
 
 public class CustomerTriggerHandler {
    
-   
     //Bussiness requirement: Taking two specific value fields from Account on update 
     //                       and update opportunity and contact records associated. 
     public static void HandleAfterUpdate(map<id, Account> oldRecords, map<id, Account> currRecords) {
