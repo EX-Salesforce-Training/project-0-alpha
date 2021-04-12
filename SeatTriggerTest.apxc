@@ -1,0 +1,69 @@
+///////////////////////////////////////////////////////////////
+//
+// Name: SeatsTriggerTest
+// Author: David Serrano, Salesforce Trainee
+// Created: 04/9/21
+// Updated: 04/11/21
+// Description: Unit tests for the Seats Trigger
+//
+///////////////////////////////////////////////////////////////
+
+@isTest
+public class SeatTriggerTest {
+    
+    // CheckSeatLimitBulkTest ensures seats will not begin to be created if initially requested to generate an amount larger
+    // than the spaceship capacity
+    @isTest
+    public static void CheckSeatLimitBulkTest(){
+        Spaceship__c spaceship = new Spaceship__c();
+        spaceship.Name = 'test';
+        spaceship.Fuel__c = 1;
+      	spaceship.Total_Seats__c = 10;
+        
+        List<Seat__c> seats = SeatGenerationUtilityTest.GenerateSeats(spaceship, 15);
+        
+        test.startTest();
+        try{
+        	insert seats;
+        }catch(DMLexception e){
+            System.assert(true);
+        }
+        test.stopTest();
+    }
+    
+    // CheckSeatLimitBulkTest2 ensures exact amount of seats are created given the amouns
+    @isTest
+    public static void CheckSeatLimitBulkTest2(){
+        Spaceship__c spaceship = new Spaceship__c();
+        spaceship.Name = 'test';
+        spaceship.Fuel__c = 1;
+      	spaceship.Total_Seats__c = 10;
+        
+        List<Seat__c> seats = SeatGenerationUtilityTest.GenerateSeats(spaceship, 10);
+        
+        test.startTest();
+        System.assertEquals(10, seats.size());
+        test.stopTest();
+     
+    }
+    
+    // CheckSeatLimitBulkTest3 makes sure new seats are not added after the seat limit is met
+    @isTest
+    public static void CheckSeatLimitBulkTest3(){
+        Spaceship__c spaceship = new Spaceship__c();
+        spaceship.Name = 'test';
+        spaceship.Fuel__c = 1;
+      	spaceship.Total_Seats__c = 10;
+        
+        List<Seat__c> seats = SeatGenerationUtilityTest.GenerateSeats(spaceship, 15);
+        
+        test.startTest();
+        Database.insert(seats, false);
+        test.stopTest();
+        
+        List<Seat__c> insertedSeats = [SELECT name from Seat__c WHERE Spaceship__c=:spaceship.Id];
+        
+        System.assertEquals(10, insertedSeats.size());
+    }
+    
+}

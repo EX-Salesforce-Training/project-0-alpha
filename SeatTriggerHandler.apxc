@@ -1,0 +1,34 @@
+///////////////////////////////////////////////////////////////
+//
+// Name: SpaceshipTriggerHandler
+// Author: David Serrano, Salesforce Trainee
+// Created: 04/9/21
+// Updated: 04/11/21
+// Description: Handler to implement logic behind the Seat Trigger Handler
+//
+///////////////////////////////////////////////////////////////
+
+
+public class SeatTriggerHandler {
+    
+    // CheckSeatLimit gets the total amount of seats available in the respective spaceship
+    // and checks if the creation of a new seat would go over that limit.
+    public static void CheckSeatLimit(List<Seat__c> seats){
+        
+        Spaceship__c spaceship = [SELECT name,id,total_seats__c FROM Spaceship__c WHERE id=:seats.get(0).spaceship__c ];
+        Seat__c[] actualSeats = [SELECT spaceship__c FROM Seat__c WHERE spaceship__c=:spaceship.id];
+        Integer availableSeats = Integer.valueOf(spaceship.Total_Seats__c) - actualSeats.size();
+        
+        for(Seat__c s:seats){
+            if(actualSeats.size() >= spaceship.Total_Seats__c){
+                s.adderror('Seat limit met');
+            } else if(availableSeats > 0){
+                availableSeats--;
+            } else {
+                s.adderror('Seat limit met');
+            }
+        }
+ 
+    }
+
+}

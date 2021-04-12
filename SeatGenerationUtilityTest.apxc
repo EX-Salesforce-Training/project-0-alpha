@@ -1,0 +1,25 @@
+///////////////////////////////////////////////////////////////
+//
+// Name: 
+// Author: David Serrano, Salesforce Trainee
+// Created: 04/9/21
+// Updated: 04/10/21
+// Description: Utility class to help set up data for the Seat Trigger Tests
+//
+///////////////////////////////////////////////////////////////
+
+@isTest
+public class SeatGenerationUtilityTest {
+
+    // GenerateSeats instantiates new Seat objects based on the amount of seats given
+    // It also assigns each Seat to the Spaceship given
+    public static List<Seat__c> GenerateSeats(Spaceship__c spaceship, Integer amountOfSeats){
+        List<Seat__c> seats = new List<Seat__c>();
+        for(Integer i = 0; i < amountOfSeats; i++){
+            Seat__c s = new Seat__c();
+            s.Spaceship__c = spaceship.Id;
+            seats.add(s);
+        }
+        return seats;
+    }
+}

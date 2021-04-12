@@ -1,0 +1,48 @@
+///////////////////////////////////////////////////////////////
+//
+// Name: BookingApplicationTriggerHandler
+// Author: David Serrano, Salesforce Trainee
+// Created: 04/8/21
+// Updated: 04/11/21
+// Description: Handler to implement logic behind the Booking Application Trigger
+//
+///////////////////////////////////////////////////////////////
+
+public class BookingApplicationTriggerHandler {
+    
+    // CreateFlightTicket creates a new Flight Ticket object when a Booking Application has been approved
+    // and fills in the fields with relevant information.
+    public static void CreateFlightTicket(List<Booking_Application__c> application){
+        
+        for(Booking_Application__c a:application){
+            
+            if(a.Application_Status__c == 'Approved'){
+                Flight_Ticket__c newTicket = new Flight_Ticket__c();
+                
+                // collecting related record Ids to obtain spaceship name respective to selected schedule
+                List<Schedule__c> schedule = [SELECT Launch_Detail__c From Schedule__c WHERE Id=:a.Schedule__c];
+                List<Launch_Detail__c> launchDetail = [SELECT Spaceship__c FROM Launch_Detail__C WHERE Id=:schedule.get(0).Launch_Detail__c];
+                List<Spaceship__c> spaceship = [SELECT Name FROM Spaceship__c WHERE Id=:launchDetail.get(0).Spaceship__c];
+ 
+                newTicket.Name = spaceship.get(0).Name + ' Ticket';               
+                newTicket.Flight_Schedule__c = a.Schedule__c;
+                newTicket.Astronaut__c = a.Astronaut__c;
+                
+                
+                // find next vacant seat and assign to ticket
+                List<Seat__c> seats = [SELECT Id,Status__c FROM Seat__c where Spaceship__c=:launchDetail.get(0).Spaceship__c];
+                    for(Seat__c s:seats){
+                        if(s.Status__c == 'Vacant'){
+                            s.Status__c = 'Booked';
+                            newTicket.Seat__c = s.Id;
+                            update s;
+                            break;
+                        }
+                    }
+                
+                insert newTicket;
+            }
+            
+        }
+    }
+}

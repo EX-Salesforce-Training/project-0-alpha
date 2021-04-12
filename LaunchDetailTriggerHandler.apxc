@@ -1,0 +1,47 @@
+///////////////////////////////////////////////////////////////
+//
+// Name: LaunchDetailTriggerHandler
+// Author: David Serrano, Salesforce Trainee
+// Created: 04/9/21
+// Updated: 04/11/21
+// Description: Handler to implement logic behind the Launch Detail Trigger
+//
+///////////////////////////////////////////////////////////////
+
+public class LaunchDetailTriggerHandler {
+    
+    // UpdateSeats helps update the flight status in a Flight Ticket if the status in the Launch Detail is updated
+    public static void UpdateStatus(List<Launch_Detail__c> detail){
+       
+        for(Launch_Detail__c d:detail){
+            List<Spaceship__c> spaceship = [SELECT Name, Seats_Booked__c, Seats_Reserved__c  FROM Spaceship__c WHERE Id=:d.Spaceship__c];
+            
+            if(spaceship.get(0).Seats_Booked__c > 0 || spaceship.get(0).Seats_Reserved__c > 0){
+               
+				String spaceshipName = spaceship.get(0).Name + '%';
+				System.debug('name: ' + spaceshipName);
+                List<Flight_Ticket__c> tickets = [SELECT Flight_Status__c FROM Flight_Ticket__c WHERE name LIKE :spaceshipName];
+                
+                for(Flight_Ticket__c ticket:tickets){
+                    switch on d.Status__c{
+                        when 'Ready for Launch'{
+                            ticket.Flight_Status__c = 'Flight On Schedule';
+                        }
+                        when 'Under Maintence'{
+                            ticket.Flight_Status__c = 'Flight Delayed';
+                        }
+                        when 'Unavailable'{
+                            ticket.Flight_Status__c = 'Flight Status Unavailable';
+                        }
+                        when 'Cancelled'{
+                            ticket.Flight_Status__c = 'Flight Cancelled';
+                            // can potentially add code to create task for customer to reschedule their flight
+                        }
+                    }
+                      
+                }
+                update tickets;
+            }
+        }
+    }
+}

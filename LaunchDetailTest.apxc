@@ -1,0 +1,64 @@
+///////////////////////////////////////////////////////////////
+//
+// Name: LaunchDetailTest
+// Author: David Serrano, Salesforce Trainee
+// Created: 04/9/21
+// Updated: 04/11/21
+// Description: Unit tests for the Launch Detail Trigger
+//
+///////////////////////////////////////////////////////////////
+
+@isTest
+public class LaunchDetailTest {
+
+    @TestSetup
+    static void makeData(){
+        Spaceship__c spaceship = new Spaceship__c(Name='Test Spaceship', Fuel__c=1, Amount_of_Seats__c='5');
+		insert spaceship;
+        
+        List<Seat__c> seats = [SELECT Name, Status__c FROM Seat__c WHERE Spaceship__c=:spaceship.Id];
+        for(Integer i = 0; i < seats.size(); i++){
+            if(i < 2){
+                seats.get(i).Status__c = 'Booked';
+            }else if(i == 3){
+                seats.get(i).Status__c = 'Vacant';
+            } else if(i > 3){
+                seats.get(i).Status__c = 'Reserved';
+            }
+            System.debug(seats.get(i).Name);
+        }
+        update seats;
+
+        Launch_Detail__c detail = new Launch_Detail__c(Name='Test Detail', Spaceship__c=spaceship.Id);
+        insert detail;
+        
+        Flight_Ticket__c ticket = new Flight_Ticket__c(Name='Test Flight');
+        ticket.Seat__c = seats.get(0).Id;
+        insert ticket;
+    }
+
+    @isTest
+    public static void CheckPositive(){
+        List<Launch_Detail__c> details = [SELECT Status__C FROM Launch_Detail__c WHERE Name = 'Test Detail'];
+        details.get(0).Status__c = 'Ready for Launch';        
+        test.startTest();
+        update details;
+        test.stopTest();
+
+        List<Flight_Ticket__c> tickets = [SELECT Flight_Status__c FROM Flight_Ticket__c WHERE Name LIKE 'Test%'];
+        String status = 'Vacant';
+        
+        for(Flight_Ticket__c t:tickets){
+            if(t.Flight_Status__c != 'Vacant'){
+                status = t.Flight_Status__c;
+                break;
+            }
+        }
+
+        System.assertEquals('Flight On Schedule', status);
+    }
+
+    public static void CheckBulk(){
+
+    }
+}
