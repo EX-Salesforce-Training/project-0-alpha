@@ -1,0 +1,35 @@
+trigger OrderTrigger on Order (before insert) {
+ // getting a set of order Id's   
+set <id> items = new set <id>();
+    // itterating through my list of orders
+    for(order o:trigger.new){
+         //adding order ID to my set   
+        items.add(o.id);
+    }
+    
+    //List<Order> orderList = trigger.new;
+     //for(interger i=0; i<orderList.size();i++){
+    
+       
+        //items.add(orderList.get(i).id);
+    //}
+    
+    
+    List<cart__c> cart=[SELECT inventory__c FROM cart__c WHERE order__r.id IN : items];
+    set<id> bag = new set<id>();
+    for(cart__c c: cart){
+        bag.add(c.id); 
+    }
+    List<inventory__c> product = [SELECT number_of_a_shoe__c FROM inventory__c where id IN :bag];
+    for(cart__c c: cart){
+        for(inventory__c shoe:product){
+            if(c.inventory__c== shoe.id){
+               shoe.number_of_a_shoe__c--;
+            }
+      
+    }
+        update product;
+    }
+    
+    
+}
