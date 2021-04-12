@@ -1,0 +1,38 @@
+//////////////////////////////////////////
+//Name: ShipmentTriggerHandler
+//Author: Abdul-Shahid Wali
+//Date Created: 04/09/21
+//Date Updated: 04/12/21
+//Description: Handler class for the ShipmentTrigger trigger
+//
+//////////////////////////////////////////
+
+public class ShipmentTriggerHandler {
+
+	public static void UpdateInventory(List<Shipment__c> newShipments){
+        
+
+        for(Shipment__c s:newShipments){
+            List<Location__c> Locations = new List<Location__c>();
+            Locations = [SELECT Inventory__c from Location__c WHERE Id=: s.Location__c];
+            //Reduce inventory by 1 for each Shipment created
+            Locations.get(0).Inventory__c--;
+            update Locations;
+            
+        }
+}
+
+
+    public static void UpdateMileage(List<Shipment__c> updatedShipments){
+        for(Shipment__c s:updatedShipments){
+            List<Delivery_Truck__c> trucks = new List<Delivery_Truck__c>();
+            trucks = [SELECT Mileage__c from Delivery_Truck__c WHERE Id=: s.Delivery_Truck__c];
+            if(s.Status__c == 'Delivered'){
+                //Increase Mileage by 30 for each package delivered
+				trucks.get(0).Mileage__c += 30;
+            }
+            update trucks;
+       }
+       
+    }
+}

@@ -1,0 +1,36 @@
+//////////////////////////////////////////
+//Name: ShipmentTrigger
+//Author: Abdul-Shahid Wali
+//Date Created: 04/09/21
+//Date Updated: 04/12/21
+//Description: Trigger for the Shipment custom object
+//
+//////////////////////////////////////////
+
+
+trigger ShipmentTrigger on Shipment__c (before insert, before update, before delete, after insert, after update, after delete, after undelete){
+    switch on trigger.operationType{
+        when BEFORE_INSERT{
+            ShipmentTriggerHandler.UpdateInventory(trigger.new);
+        }
+        when BEFORE_UPDATE{
+            
+        }
+        when BEFORE_DELETE{
+            
+        }
+        when AFTER_INSERT{
+            
+        }
+        when AFTER_UPDATE{
+           ShipmentTriggerHandler.UpdateMileage(trigger.new);
+        }
+        when AFTER_DELETE{
+            
+        }
+        
+        when AFTER_UNDELETE{
+            
+        }
+    }
+}
