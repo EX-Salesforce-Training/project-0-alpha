@@ -1,0 +1,4 @@
+Trigger Design best-practice
+    -write logic less triggers and let the trigger use handler classes 
+    -write only one trigger per object
+    -use context-specific handler methods
