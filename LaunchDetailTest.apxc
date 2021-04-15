@@ -13,7 +13,7 @@ public class LaunchDetailTest {
 
     @TestSetup
     static void makeData(){
-        Spaceship__c spaceship = new Spaceship__c(Name='Test Spaceship', Fuel__c=1, Amount_of_Seats__c='5');
+        Spaceship__c spaceship = new Spaceship__c(Name='Wig', Fuel__c=1, Amount_of_Seats__c='5');
 		insert spaceship;
         
         List<Seat__c> seats = [SELECT Name, Status__c FROM Seat__c WHERE Spaceship__c=:spaceship.Id];
@@ -32,30 +32,36 @@ public class LaunchDetailTest {
         Launch_Detail__c detail = new Launch_Detail__c(Name='Test Detail', Spaceship__c=spaceship.Id);
         insert detail;
         
-        Flight_Ticket__c ticket = new Flight_Ticket__c(Name='Test Flight');
-        ticket.Seat__c = seats.get(0).Id;
-        insert ticket;
+        List<Flight_Ticket__c> tickets = new List<Flight_Ticket__c>();
+        for(Integer i = 0; i < seats.size(); i++){
+            Flight_Ticket__c ticket = new Flight_Ticket__c();
+            ticket.Name = spaceship.Name + ' Ticket';
+            ticket.Spaceship__c = spaceship.id;
+            ticket.Seat__c = seats.get(i).Id;
+        }
+        insert tickets;
     }
 
     @isTest
     public static void CheckPositive(){
-        List<Launch_Detail__c> details = [SELECT Status__C FROM Launch_Detail__c WHERE Name = 'Test Detail'];
-        details.get(0).Status__c = 'Ready for Launch';        
+        List<Launch_Detail__c> details = [SELECT Status__C FROM Launch_Detail__c WHERE Name='Test Detail'];
+        details.get(0).Status__c = 'Ready for Launch';  
+    	
         test.startTest();
         update details;
         test.stopTest();
-
-        List<Flight_Ticket__c> tickets = [SELECT Flight_Status__c FROM Flight_Ticket__c WHERE Name LIKE 'Test%'];
-        String status = 'Vacant';
+     
+        List<Flight_Ticket__c> tickets = [SELECT name,Flight_Status__c FROM Flight_Ticket__c WHERE Name='Wig Ticket'];
+        List<String> statuses = new List<String>();
+        System.debug('Test Flight Ticket Amt: ' + tickets.size());
         
         for(Flight_Ticket__c t:tickets){
-            if(t.Flight_Status__c != 'Vacant'){
-                status = t.Flight_Status__c;
-                break;
-            }
+            System.debug('ticket: ' + t.Name + '&& status: ' + t.Flight_Status__c );
+            statuses.add(t.Flight_Status__c);
         }
+        
 
-        System.assertEquals('Flight On Schedule', status);
+        System.assertEquals('Flight On Schedule', statuses.get(0));
     }
 
     public static void CheckBulk(){

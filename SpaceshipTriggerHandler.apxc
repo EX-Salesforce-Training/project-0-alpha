@@ -3,20 +3,24 @@
 // Name: SpaceshipTriggerHandler
 // Author: David Serrano, Salesforce Trainee
 // Created: 04/9/21
-// Updated: 04/11/21
-// Description: Handler to implement logic behind the Spaceship Trigger
+// Updated: 04/14/21
+// Description: We go over trigger basics.
 //
 ///////////////////////////////////////////////////////////////
 
 public class SpaceshipTriggerHandler {
     
-    // CreateSeates creates seats equal to the total amount of seats defined in the Spaceship object
+    // CreateSeates instantiates seats equal to the total amount of seats defined in the Spaceship object
     public static void CreateSeats(List<Spaceship__c> spaceship){
-        
+        system.debug('CreateSeats: spaceship size: ' + spaceship.size());
        	List<Seat__c> seats = new List<Seat__c>();
         
         for(Spaceship__c s:spaceship){
+            
+            system.debug('CreateSeats - amount of seats: ' + s.Amount_of_Seats__c ); 
+            
             for(Integer i = 1; i <= Integer.valueOf(s.Amount_of_Seats__c) ; i++){
+  
                 Seat__c newSeat = new Seat__c();
                 newSeat.Name = s.Name + ' Seat ' + i;
                 newSeat.Spaceship__c = s.Id;
@@ -25,9 +29,13 @@ public class SpaceshipTriggerHandler {
                 if(i <= 5){
                     newSeat.Seat_Location__c = 'X' + i;
                 }else if(i > 5 && i <= 10){
-                    newSeat.Seat_Location__c = 'Y' + i;   
+                    Integer j = 1;
+                    newSeat.Seat_Location__c = 'Y' + j;
+                    j++;
                 }else if (i > 10 && i <= 15){
-                    newSeat.Seat_Location__c = 'Z' + i;
+                    Integer j = 1;
+                    newSeat.Seat_Location__c = 'Z' + j;
+                    j++;
                 }
                 
                 seats.add(newSeat);

@@ -3,7 +3,7 @@
 // Name: BookingApplicationTriggerHandler
 // Author: David Serrano, Salesforce Trainee
 // Created: 04/8/21
-// Updated: 04/11/21
+// Updated: 04/14/21
 // Description: Handler to implement logic behind the Booking Application Trigger
 //
 ///////////////////////////////////////////////////////////////
@@ -14,35 +14,41 @@ public class BookingApplicationTriggerHandler {
     // and fills in the fields with relevant information.
     public static void CreateFlightTicket(List<Booking_Application__c> application){
         
-        for(Booking_Application__c a:application){
-            
-            if(a.Application_Status__c == 'Approved'){
-                Flight_Ticket__c newTicket = new Flight_Ticket__c();
+        Set<Id> scheduleIds = new Set<Id>();
+        Set<Id> detailIds = new Set<Id>();
+        Set<Id> spaceshipIds = new Set<Id>();
+        
+        // chain of getting necessary Id's and querying upwards to traverse through parents for appropriate spaceship Id
+        for(Booking_Application__c a:application){scheduleIds.add(a.Schedule__c); }
+        List<Schedule__c> schedules = [SELECT Launch_Detail__c FROM Schedule__c WHERE Id IN :scheduleIds]; 
+        for(Schedule__c s:schedules){ detailIds.add(s.Launch_Detail__c); }
+        List<Launch_Detail__c> details = [SELECT Spaceship__c FROM Launch_Detail__c WHERE Id IN :detailIds];
+        for(Launch_Detail__c d:details){ spaceshipIds.add(d.Spaceship__c); }
+        
+        List<Spaceship__c> spaceships = [SELECT Name FROM Spaceship__c WHERE Id IN :spaceshipIds];
+        List<Seat__c> seats = [SELECT Id, Status__c FROM Seat__c WHERE Spaceship__c IN :spaceshipIds];
+       	
+        
+        List<Flight_Ticket__c> newTickets = new List<Flight_Ticket__c>();
+        for(Booking_Application__c a:application){  
+            if(a.Application_Status__c == 'Approved'){ 
+                Flight_Ticket__c ticket = new Flight_Ticket__c();
+                ticket.Name = spaceships.get(0).Name + ' Ticket';               
+                ticket.Flight_Schedule__c = a.Schedule__c;
+                ticket.Astronaut__c = a.Astronaut__c;
                 
-                // collecting related record Ids to obtain spaceship name respective to selected schedule
-                List<Schedule__c> schedule = [SELECT Launch_Detail__c From Schedule__c WHERE Id=:a.Schedule__c];
-                List<Launch_Detail__c> launchDetail = [SELECT Spaceship__c FROM Launch_Detail__C WHERE Id=:schedule.get(0).Launch_Detail__c];
-                List<Spaceship__c> spaceship = [SELECT Name FROM Spaceship__c WHERE Id=:launchDetail.get(0).Spaceship__c];
- 
-                newTicket.Name = spaceship.get(0).Name + ' Ticket';               
-                newTicket.Flight_Schedule__c = a.Schedule__c;
-                newTicket.Astronaut__c = a.Astronaut__c;
-                
-                
-                // find next vacant seat and assign to ticket
-                List<Seat__c> seats = [SELECT Id,Status__c FROM Seat__c where Spaceship__c=:launchDetail.get(0).Spaceship__c];
-                    for(Seat__c s:seats){
-                        if(s.Status__c == 'Vacant'){
-                            s.Status__c = 'Booked';
-                            newTicket.Seat__c = s.Id;
-                            update s;
-                            break;
-                        }
+                // find the next available seat and set it to booked
+                for(Seat__c s:seats){
+                    if(s.Status__c == 'Vacant'){
+                        s.Status__c = 'Booked';
+                        ticket.Seat__c = s.Id;
+                        break;
                     }
-                
-                insert newTicket;
+                }
+               newTickets.add(ticket);
             }
-            
         }
+        update seats;
+        insert newTickets;
     }
 }
