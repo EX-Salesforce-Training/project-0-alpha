@@ -29,7 +29,6 @@ public class OrderBookTriggerHandler {
             idToBook.put(b.Id, b.Price__c);
         }
         //traverse list of orders 
-        Integer count = 0;
         for(OrderBook__c ob : currOrders) {
             for(Order o : orders) {
                 //if price is not null and book hasn't been added to order 
