@@ -8,7 +8,8 @@
 */
 @isTest
 public class CustomerTriggerHandlerTest {
-    @isTest Public static void TestInsert() {
+    
+    @isTest Public static void TestHandleAfterUpdate() {
         Account currAccount = new Account(Name='New Test');
         test.starttest();
         insert currAccount;
