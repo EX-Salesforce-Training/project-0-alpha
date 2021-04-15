@@ -1,0 +1,11 @@
+public class DeliveryTruckTriggerHandler {
+    
+    public static void CheckMileage(List<Delivery_Truck__c> truck){
+        for(Delivery_Truck__c dt:truck){
+            if(dt.Mileage__c >= 750000){
+                dt.Status__c = 'Decommissioned';
+            }
+        }
+    }
+
+}

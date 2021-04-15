@@ -1,0 +1,8 @@
+trigger DeliveryTruckTrigger on Delivery_Truck__c (before update) {
+    switch on trigger.operationType{
+        when BEFORE_UPDATE{
+            DeliveryTruckTriggerHandler.CheckMileage(trigger.new);
+        }
+    }
+
+}

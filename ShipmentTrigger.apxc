@@ -25,12 +25,5 @@ trigger ShipmentTrigger on Shipment__c (before insert, before update, before del
         when AFTER_UPDATE{
            ShipmentTriggerHandler.UpdateMileage(trigger.new);
         }
-        when AFTER_DELETE{
-            
-        }
-        
-        when AFTER_UNDELETE{
-            
-        }
     }
 }

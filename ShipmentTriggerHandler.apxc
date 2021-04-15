@@ -11,28 +11,49 @@ public class ShipmentTriggerHandler {
 
 	public static void UpdateInventory(List<Shipment__c> newShipments){
         
-
-        for(Shipment__c s:newShipments){
-            List<Location__c> Locations = new List<Location__c>();
-            Locations = [SELECT Inventory__c from Location__c WHERE Id=: s.Location__c];
-            //Reduce inventory by 1 for each Shipment created
-            Locations.get(0).Inventory__c--;
-            update Locations;
-            
+        set<ID> ids = new set<ID>();
+        for (Shipment__c s:newShipments){
+            ids.add(s.location__c);
         }
-}
+		List<Location__c> locations = new List<Location__c>();
+        locations = [SELECT Inventory__c, Name from Location__c WHERE Id IN :ids];
+		
+        for(Shipment__c s:newShipments){
+        	for(Location__c l:locations){
+                if(l.Id == s.Location__c){
+        			if(l.Inventory__c <= 0){
+                    	//Don't create new shipment if no inventory left at location
+                		s.addError('No more inventory at ' + l.Name);
+            		}
+            		else{
+                    	//Reduce inventory by 1 for each Shipment created
+            			l.Inventory__c--;	
+            		}
+            	}
+        	
+        	}
+        }
+        update locations;
+    }
 
 
     public static void UpdateMileage(List<Shipment__c> updatedShipments){
+        Set<ID> ids = new Set<ID>();
         for(Shipment__c s:updatedShipments){
-            List<Delivery_Truck__c> trucks = new List<Delivery_Truck__c>();
-            trucks = [SELECT Mileage__c from Delivery_Truck__c WHERE Id=: s.Delivery_Truck__c];
-            if(s.Status__c == 'Delivered'){
-                //Increase Mileage by 30 for each package delivered
-				trucks.get(0).Mileage__c += 30;
-            }
-            update trucks;
-       }
-       
+            ids.add(s.Delivery_Truck__c);
+        }
+        List<Delivery_Truck__c> trucks = new List<Delivery_Truck__c>();
+        trucks = [SELECT Mileage__c from Delivery_Truck__c WHERE ID IN :ids];
+        for(Shipment__c s:updatedShipments){
+        	for(Delivery_Truck__c dt:trucks){
+                if(dt.Id == s.Delivery_Truck__c){
+            		if(s.Status__c == 'Delivered'){
+                	//Increase Mileage by 30 for each package delivered
+					trucks[0].Mileage__c += 30;
+            		}
+       			}
+        	}
+        }
+        update trucks;
     }
 }

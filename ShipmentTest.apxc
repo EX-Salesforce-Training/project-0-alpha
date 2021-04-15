@@ -9,8 +9,9 @@
 
 @isTest
 private class ShipmentTest {
-    
-    @isTest static void singleTest(){
+    //Single test for the ShipmentTrigger
+    @isTest static void SingleTest(){
+        //Setting up a shipment with a delivery truck and location
         Delivery_Truck__c newTruck = new Delivery_Truck__c(Mileage__c = 30000);
         Location__c newLocation = new Location__c(Name = 'Target', Inventory__c = 3000);
         insert newTruck;
@@ -18,18 +19,57 @@ private class ShipmentTest {
         Shipment__c newShipment = new Shipment__c(Status__c = 'Not Shipped') ;
     	newShipment.Location__c = newLocation.Id;
         newShipment.Delivery_Truck__c = newTruck.Id;
-       
+        //Inserting the new shipment, causing the trigger to fire
         insert newShipment;
         List<Location__c> testLocation = [SELECT Inventory__c from Location__c WHERE ID = :newLocation.Id];
         //If the inventory has been reduced by 1, the test succeeds
         System.assertEquals(2999, testLocation[0].Inventory__c);
-        
-        
+        newLocation.Inventory__c = 0;
+        update newLocation;
+		Shipment__c newShipment2 = new Shipment__c(Status__c = 'Not Shipped') ;
+        newShipment2.Location__c = newLocation.Id;
+        //Insert should fail due to not enough inventory
+        insert newShipment2;
+
+       
+        //Changing the status to Delivered should increase the mileage
         newShipment.Status__c = 'Delivered';
         update newShipment;
         list<Delivery_Truck__c> testTruck = [SELECT Mileage__c from Delivery_Truck__c WHERE Id = :newTruck.Id];
         //If the mileage has been increased by 30, the test succeeds
         System.assertEquals(30030, testTruck[0].Mileage__c);
     }
+    //Bulk test for the ShipmentTrigger
+    @isTest static void BulkTest(){
+        //Setting up 200 new shipments with the same truck and from the same location
+        Delivery_Truck__c newTruck = new Delivery_Truck__c(Mileage__c = 30000);
+        Location__c newLocation = new Location__c(Name = 'Target', Inventory__c = 3000);
+        insert newTruck;
+        insert newLocation;
+        List<Shipment__c> newShipments = new List<Shipment__c>();
+        for(Integer i = 0; i < 200; i++){
+            Shipment__c newShipment = new Shipment__c(Status__c = 'Not Shipped');
+            newShipment.Location__c = newLocation.Id;
+            newShipment.Delivery_Truck__c = newTruck.Id;
+            newShipments.add(newShipment);
+        }
+        //Inserting the shipments should cause the trigger to fire
+        insert newShipments;
+        //If the inventory is reduced by 200, the test succeeds
+        List<Location__c> testLocation = [SELECT Inventory__c FROM Location__c WHERE Id = :newLocation.Id];
+        System.assertEquals(2800, testLocation[0].Inventory__c);
+        
+        //Changing the status of all the packages to Delivered
+        for(Shipment__c s:newShipments){
+            s.Status__c = 'Delivered';
+        }
+        update newShipments;
+        list<Delivery_Truck__c> testTruck = [SELECT Mileage__c from Delivery_Truck__c WHERE Id = :newTruck.Id];
+        //The mileage of the truck should increase by 6000
+        System.assertEquals(36000, testTruck[0].Mileage__c);
 
+    }
+        
+
+        
 }
