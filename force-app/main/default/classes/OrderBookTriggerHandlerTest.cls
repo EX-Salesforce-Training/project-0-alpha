@@ -9,39 +9,64 @@
 
 @IsTest 
 public with sharing class OrderBookTriggerHandlerTest {
+        //testing method to check if OrderBook trigger handler is working right. i.e. positive test
         @isTest public static void  TestOrderHandler() {
-        
-            List<Order> orders = new List<Order>();
 
             List<Id> orderIds = new List<Id>();
             Account randomAccount = OrderBookTriggerHandlerTest.GetNewAccount();
+            Contract randomContract = OrderBookTriggerHandlerTest.GetNewContract( randomAccount.Id);
+            Book__c randomBook = OrderBookTriggerHandlerTest.GetNewBook();
+            Book__c randomBook_0 = OrderBookTriggerHandlerTest.GetNewBook();
+
+            //begin testing where insert of new OrderBook should cause trigger to fire. 
             test.starttest();
             insert randomAccount;
-            Contract randomContract = OrderBookTriggerHandlerTest.GetNewContract(randomAccount.Id);
-            //create test orders to verify data entries
-            for(Integer i =0; i < 90; i ++) {
-                Order curr = new Order();
-                curr.Name = 'test@ ' + i;
-                curr.ContractId =  randomContract.Id;
-                curr.AccountId = randomAccount.Id;
-                curr.status = 'Draft';
-                curr.EffectiveDate = Date.newInstance(2021, 4, 14);
-                orders.add(curr);
-                orderIds.add(curr.Id);
-            }
-            
-            insert orders;
+            //create test orders and book to verify data entries
+            insert randomBook;
+            Order testOrder = OrderBookTriggerHandlerTest.GetNewOrder(randomContract.Id, randomAccount.Id, orderIds);
+            insert testOrder;
+            OrderBook__c orderBookEntryTest = OrderBookTriggerHandlerTest.GetNewOrderBook(testOrder.Id, randomBook.Id);
+            OrderBook__c orderBookEntryTest_0 = OrderBookTriggerHandlerTest.GetNewOrderBook(testOrder.Id, randomBook_0.Id);
+            insert orderBookEntryTest;
             test.stoptest();
-            for (Order currOrder : orders) {
-                //check each order object created to verify data is right 
+            Order checkOrderIsUpdated = [SELECT Name, Id, Total_Cost__c FROM Order WHERE Id = :testOrder.Id];
 
-            }
-            System.assertEquals( 'helloworld', 'helloworld');
+            System.assertEquals( checkOrderIsUpdated.Total_Cost__c, 8);
+        }
+         
+        //Create new OrderBook entry for testing purposes 
+        public static OrderBook__c GetNewOrderBook(Id bookId, Id orderId) {
+            OrderBook__c orderBookEntry = new OrderBook__c();
+            orderBookEntry.Name = 'Testing OrderBook @ ' + bookId + ', '  + orderId;
+            orderBookEntry.BookId__c = bookId;
+            orderBookEntry.Order__c = orderId;
+            return orderBookEntry;
         }
 
+        //Create new Book for testing purposes
+        public static Book__c GetNewBook() {
+            Book__c book = new Book__c();
+            book.Name = 'Testing in OrderBookHandler test';
+            book.Price__c = 4.0;
+            return book;
+        }
+        //Create new Order for testing purposes
+        public static  Order GetNewOrder(Id contractId, Id accountId, List<Id> orderIds) {
+                Order curr = new Order();
+                curr.Name = 'test@ ' + accountId;
+                curr.ContractId =  contractId;
+                curr.AccountId = accountId;
+                curr.status = 'Draft';
+                curr.EffectiveDate = Date.newInstance(2021, 4, 14);
+                orderIds.add(curr.Id);
+                return curr;
+        }
+
+        //Create new Account for testing purposes
         public static Account GetNewAccount() 
         { return new Account(Name='TestingGetnewAccount'); }
 
+        //Create new Contract for testing purposes
         public static Contract GetNewContract(Id accId) { 
             Contract contract = new Contract();
             contract.AccountId = accId;
