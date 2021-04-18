@@ -1,5 +1,5 @@
 /*
-// Name: OrderTriggerHandler class
+// Name: OrderBookTriggerHandler class
 // Author: Andreology
 // Created: 04/08/21
 // Updated: 04/10/21

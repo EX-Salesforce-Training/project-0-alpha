@@ -15,8 +15,8 @@ public with sharing class OrderBookTriggerHandlerTest {
             List<Id> orderIds = new List<Id>();
             Account randomAccount = OrderBookTriggerHandlerTest.GetNewAccount();
             Contract randomContract = OrderBookTriggerHandlerTest.GetNewContract( randomAccount.Id);
-            Book__c randomBook = OrderBookTriggerHandlerTest.GetNewBook();
-            Book__c randomBook_0 = OrderBookTriggerHandlerTest.GetNewBook();
+            Book__c randomBook = OrderBookTriggerHandlerTest.GetNewBook(0);
+            Book__c randomBook_0 = OrderBookTriggerHandlerTest.GetNewBook(1);
 
             //begin testing where insert of new OrderBook should cause trigger to fire. 
             test.starttest();
@@ -24,10 +24,12 @@ public with sharing class OrderBookTriggerHandlerTest {
             //create test orders and book to verify data entries
             insert randomBook;
             Order testOrder = OrderBookTriggerHandlerTest.GetNewOrder(randomContract.Id, randomAccount.Id, orderIds);
+        
             insert testOrder;
-            OrderBook__c orderBookEntryTest = OrderBookTriggerHandlerTest.GetNewOrderBook(testOrder.Id, randomBook.Id);
-            OrderBook__c orderBookEntryTest_0 = OrderBookTriggerHandlerTest.GetNewOrderBook(testOrder.Id, randomBook_0.Id);
+            OrderBook__c orderBookEntryTest = OrderBookTriggerHandlerTest.GetNewOrderBook(randomBook.Id, testOrder.Id);
+            OrderBook__c orderBookEntryTest_0 = OrderBookTriggerHandlerTest.GetNewOrderBook(randomBook.Id, testOrder.Id);
             insert orderBookEntryTest;
+             insert orderBookEntryTest_0;
             test.stoptest();
             Order checkOrderIsUpdated = [SELECT Name, Id, Total_Cost__c FROM Order WHERE Id = :testOrder.Id];
 
@@ -44,10 +46,10 @@ public with sharing class OrderBookTriggerHandlerTest {
         }
 
         //Create new Book for testing purposes
-        public static Book__c GetNewBook() {
+        public static Book__c GetNewBook(Integer x) {
             Book__c book = new Book__c();
-            book.Name = 'Testing in OrderBookHandler test';
-            book.Price__c = 4.0;
+            book.Name = 'Testing in OrderBookHandler test ' + x;
+            book.Price__c = 4;
             return book;
         }
         //Create new Order for testing purposes
