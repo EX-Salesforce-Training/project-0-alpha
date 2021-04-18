@@ -6,13 +6,13 @@
 // Description: The customer trigger handler class will handle 
 //              after insert and after update on the standard account object. 
 */
-
 public class CustomerTriggerHandler {
-   
     //Bussiness requirement: Taking two specific value fields from Account on update 
     //                       and update opportunity and contact records associated. 
+    //@param oldRecords: map<id, Account> containing old recrods before the update i.e. oldMap
+    //@param currRecords: map<id, Account> containing the new records after the update i.e. newMap
     public static void HandleAfterUpdate(map<id, Account> oldRecords, map<id, Account> currRecords) {
-        System.debug('starting handafterupdate');
+        
         map<Id, Account> matchContacts = new map<Id, Account>();
         set<Id> availableContacts = new set<Id>();
         map<Id, Account> matchOpportunities = new map<Id, Account>();
@@ -28,12 +28,14 @@ public class CustomerTriggerHandler {
                 matchContacts.put(currAcc.Contact__c, currAcc);
             }
         }
+        /*
         //store org Opportunities in collection
         //contacts are checked against existing customer accounts
-        list <Opportunity> orgOpportunities = [SELECT Emergency_Contact_0__c, Emergency_Contact_1__c, Name, Id
-                                           FROM Opportunity WHERE Id IN :availableOpportunities];
-        list <Contact> orgContacts = [SELECT Emergency_Contact_0__c, Emergency_Contact_1__c, Name, Id
-                                           FROM Contact WHERE Id IN :availableContacts];
+        //list <Opportunity> orgOpportunities = [SELECT Emergency_Contact_0__c, Emergency_Contact_1__c, Name, Id
+        //                                   FROM Opportunity WHERE Id IN :availableOpportunities];
+        //list <Contact> orgContacts = [SELECT Emergency_Contact_0__c, Emergency_Contact_1__c, Name, Id
+        //                                   FROM Contact WHERE Id IN :availableContacts];
+        */
         list <Contact> finalOrgContacts = new list<Contact>();
         for (Contact currContact : [SELECT Emergency_Contact_0__c, Emergency_Contact_1__c, Name, Id FROM Contact WHERE Id IN :availableContacts])
         { //Traverse new accounts and retreive both emergency contacts. 

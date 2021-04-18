@@ -10,13 +10,60 @@
 public class CustomerTriggerHandlerTest {
     
     @isTest Public static void TestHandleAfterUpdate() {
-        Account currAccount = new Account(Name='New Test');
+        //create account, opportunity and contact 
+        Account testAccount = CustomerTriggerHandlerTest.GetNewAccount();
         test.starttest();
-        insert currAccount;
+        insert testAccount;
+        Contact testContact = CustomerTriggerHandlerTest.GetNewContact(testAccount.Id);
+        Opportunity testOpportunity = CustomerTriggerHandlerTest.GetNewOpp(testAccount.Id);
+        //check that all emergency contacts are consistent across all objects. 
+        testAccount.Contact__c = testContact.Id;
+        testAccount.Opportunity__c = testOpportunity.Id;
+        insert testContact;
+        insert testOpportunity;
+        update testAccount;
         test.stoptest();
-        Account accInput = [SELECT Id, Name, Description FROM Account WHERE id = :currAccount.id];
-        Task taskInput = [SELECT Id, Subject FROM Task WHERE whatId = :currAccount.id];
-        system.assertEquals('New Test', accInput.name);
-        system.assertEquals('Book Store Corp. LLC', accInput.description);
+
+        System.assertEquals( testAccount.Emergency_Contact_0__c, testContact.Emergency_Contact_0__c);
+        System.assertEquals( testAccount.Emergency_Contact_0__c, testContact.Emergency_Contact_1__c);
+        System.assertEquals( testAccount.Emergency_Contact_1__c, testOpportunity.Emergency_Contact_0__c);
+        System.assertEquals( testAccount.Emergency_Contact_1__c, testOpportunity.Emergency_Contact_1__c);
+
+        Contact contCopy = [SELECT Id, Emergency_Contact_0__c, Emergency_Contact_1__c
+                            FROM Contact 
+                            WHERE Id = :testContact.Id];
+        Opportunity oppCopy = [SELECT Id, Emergency_Contact_0__c, Emergency_Contact_1__c 
+                               FROM Opportunity 
+                               WHERE Id = :testOpportunity.Id];
+
+        System.assertEquals( testAccount.Emergency_Contact_0__c, contCopy.Emergency_Contact_0__c);
+        System.assertEquals( testAccount.Emergency_Contact_0__c, contCopy.Emergency_Contact_1__c);
+        System.assertEquals( testAccount.Emergency_Contact_1__c, oppCopy.Emergency_Contact_0__c);
+        System.assertEquals( testAccount.Emergency_Contact_1__c, oppCopy.Emergency_Contact_1__c);
+
+   }
+    //Create new Account for testing purposes
+    public static Account GetNewAccount() 
+    {
+        Account currAccount =  new Account(Name='TestingGetnewAccount'); 
+         return currAccount;
     }
+
+    //Create new Opportunity for testing 
+    public static Opportunity GetNewOpp(Id accId) {
+         Opportunity currOpp = new Opportunity();
+         currOpp.Name = 'test: TestHandleAfterUpdate GetNewOpp';
+         currOpp.StageName = 'Prospecting';
+         currOpp.AccountId = accId;
+         currOpp.closeDate = Date.newInstance(2021, 4, 18);
+         return currOpp;
+    }
+    //Create new Contact for testing 
+    public static Contact GetNewContact(Id accId) {
+        Contact currCont = new Contact();
+       currCont.LastName = 'FalishaTest';
+       currCont.AccountId = accId;
+       return currCont;
+   } 
+   
 }
