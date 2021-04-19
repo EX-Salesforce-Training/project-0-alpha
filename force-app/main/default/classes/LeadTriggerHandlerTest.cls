@@ -12,12 +12,21 @@ public class LeadTriggerHandlerTest {
     @isTest Public static void TestInsert() {
         Lead currLead = new Lead();
         currLead.Title='Testing account';
+        currLead.LastName = 'testing lead';
+        currLead.Company = 'testc corp';
         test.starttest();
         insert currLead;
         test.stoptest();
         //end test and check results
-        Lead leadInput = [SELECT Id, Title, Description FROM Lead WHERE id = :currLead.id];
+        Lead leadInput = [SELECT Id, Title, Description, OwnerId FROM Lead WHERE id = :currLead.id];
         system.assertEquals('Testing account', leadInput.Title);
         system.assertEquals('Book Store Corp. LLC', leadInput.description);
+       // Task testTask = [SELECT Subject, Priority, ownerId
+      //                   FROM Task  
+        //                 WHERE whatId = :currLead.owner];
+        
+        
+        //system.assertEquals(' New Customer, yay!', testTask.Subject);
+        //system.assertEquals('Normal', testTask.Priority);
     }
 }

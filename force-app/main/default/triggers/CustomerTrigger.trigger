@@ -14,10 +14,6 @@ trigger CustomerTrigger on Account (before insert, after insert, after update) {
     // }
 
     switch on trigger.operationType{
-        when BEFORE_INSERT {
-        }
-        when AFTER_INSERT { 
-        }
         when AFTER_UPDATE {
             CustomerTriggerHandler.HandleAfterUpdate(Trigger.oldMap, Trigger.newMap);
         }
